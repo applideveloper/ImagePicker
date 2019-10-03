@@ -23,8 +23,8 @@ class ShareViewController: UIViewController {
 		super.viewDidLoad()
 		self.imgCollectionView.delegate = self
 		self.imgCollectionView.dataSource = self
-		let attributes = [NSForegroundColorAttributeName: UIColor.white,
-		                  NSFontAttributeName: UIFont(name: "Helvetica", size: 18)!] as [String: Any]
+        let attributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.foregroundColor: UIColor.white,
+		                  NSAttributedString.Key.font: UIFont(name: "Helvetica", size: 18)!]
 		
 		self.navigationController?.navigationBar.titleTextAttributes = attributes
 		self.navigationItem.title = "Picked Images"
@@ -57,8 +57,12 @@ class ShareViewController: UIViewController {
 		
 		let content = extensionContext!.inputItems[0] as! NSExtensionItem
 		let contentType = kUTTypeImage as String
+
+        guard let attachments = content.attachments else {
+            return
+        }
 		
-		for (index, attachment) in (content.attachments as! [NSItemProvider]).enumerated() {
+		for (index, attachment) in attachments.enumerated() {
 			if attachment.hasItemConformingToTypeIdentifier(contentType) {
 				
 				attachment.loadItem(forTypeIdentifier: contentType, options: nil) { [weak self] data, error in
@@ -73,10 +77,10 @@ class ShareViewController: UIViewController {
 							// CONVERTED INTO FORMATTED FILE : OVER COME MEMORY WARNING
 							// YOU USE SCALE PROPERTY ALSO TO REDUCE IMAGE SIZE
 							let image = UIImage.resizeImage(image: rawImage!, width: 100, height: 100)
-							let imgData = UIImagePNGRepresentation(image)
+							let imgData = image.pngData()!
 							
 							this.selectedImages.append(image)
-							this.imagesData.append(imgData!)
+							this.imagesData.append(imgData)
 							
 							if index == (content.attachments?.count)! - 1 {
 								DispatchQueue.main.async {
